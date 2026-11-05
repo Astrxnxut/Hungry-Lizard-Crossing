@@ -579,21 +579,16 @@ void Lizard::lizardThread(Lizard *aLizard)
        */
 
 
+      aLizard->sleepNow();                    // TJ
+      aLizard->sago2MonkeyGrassIsSafe();      // TJ
+      aLizard->crossSago2MonkeyGrass();       // TJ
+      aLizard->madeIt2MonkeyGrass();          // TJ
 
+      aLizard->eat();                         // TJ
 
-
-
-
-
-
-
-
-
-
-
-
-
-
+      aLizard->monkeyGrass2SagoIsSafe();      // TJ
+      aLizard->crossMonkeyGrass2Sago();       // TJ
+      aLizard->madeIt2Sago();                 // TJ
 
     }
 
@@ -661,6 +656,10 @@ int main(int argc, char **argv)
     /*
      * Create NUM_CATS cat threads
      */
+    vector<Cat*> allCats;                     // TJ
+    for (int i = 0; i < NUM_CATS; i++) {      // TJ
+      allCats.push_back(new Cat(i));         // TJ
+    }
 	 
 
 	/*
@@ -669,6 +668,10 @@ int main(int argc, char **argv)
     for (int i=0; i < NUM_LIZARDS; i++) {
         allLizards[i]->run();
     }
+
+    for (int i = 0; i < NUM_CATS; i++) {    // TJ
+        allCats[i]->run();                   // TJ
+    } 
 
 	/*
      * Now let the world run for a while
@@ -685,7 +688,13 @@ int main(int argc, char **argv)
     /*
      * Wait until all threads terminate
      */
+    for (int i = 0; i < NUM_LIZARDS; i++) {  // TJ
+      allLizards[i]->wait();                // TJ
+    }
 
+    for (int i = 0; i < NUM_CATS; i++) {      // TJ
+      allCats[i]->wait();                   // TJ
+    }
 
 
 
@@ -700,6 +709,14 @@ int main(int argc, char **argv)
 	/*
 	 * Delete all cat and lizard objects
 	 */
+
+  for (int i = 0; i < NUM_LIZARDS; i++) {  // TJ
+    delete allLizards[i];                 // TJ
+  }
+
+  for (int i = 0; i < NUM_CATS; i++) {      // TJ
+    delete allCats[i];                    // TJ
+  }
  
 
 
