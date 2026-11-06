@@ -26,6 +26,8 @@
 #include <mutex>
 #include <vector>
 
+#include <semaphore> //CF
+
 
 using namespace std;
 
@@ -44,7 +46,7 @@ using namespace std;
  * be simulated.  
  * Try 30 for development and 120 for more thorough testing.
  */
-#define WORLDEND             30
+#define WORLDEND             120
 
 /*
  * Number of lizard threads to create
@@ -85,8 +87,10 @@ using namespace std;
 /*
  * Declare global variables here
  */
-pthread_mutex_t lock;
-bool lockIsOpen;
+pthread_mutex_t lizardLock; //CF
+bool lockIsOpen; //CF
+counting_semaphore<4> lizardSemaphore(4); //CF
+int semaphoreCounter = 4; //CF
 
 /**************************************************/
 /* Please leave these variables alone.  They are  */
@@ -147,7 +151,7 @@ int Cat::getId()
 /**
  * Launches a cat thread.
  * 
- * Status: Incomplete - Make changes to this code.
+ * Status: Complete - Make changes to this code.
  */
  void Cat::run() 
  {
@@ -157,7 +161,7 @@ int Cat::getId()
  /**
   * Waits for a cat to finish running.
   *
-  * Status: Incomplete - Make changes to this code.
+  * Status: Complete - Make changes to this code.
   */
  void Cat::wait()
  {
@@ -206,7 +210,7 @@ void Cat::sleepNow()
   * 
   * @return - N/A
   *
-  * Status: Incomplete - Make changes as you see are necessary.
+  * Status: Complete - Make changes as you see are necessary. //CF
   */
 void Cat::catThread (Cat *aCat)
 {
@@ -328,7 +332,7 @@ void Lizard::sleepNow()
 
 	if (debug)
     {
-      cout << "[" << _id << "] awake" << endl;
+      cout << "[" << _id << "] lizard awake" << endl;
       cout << flush;
     }
 }
@@ -342,22 +346,29 @@ void Lizard::sleepNow()
  * to the monkey grass.   Should use some synchronization 
  * facilities (lock/semaphore) here.
  *
- * Status: Incomplete - Make changes as you see are necessary.
+ * Status: Complete - Make changes as you see are necessary. //CF
  */
 void Lizard::sago2MonkeyGrassIsSafe()
 {
 	if (debug)
     {
-		cout << "[" << _id << "] checking  sago -> monkey grass" << endl;
+		cout << "[" << _id << "] checking sago -> monkey grass" << endl;
 		cout << flush;
     }
+    
+  lizardSemaphore.acquire(); //CF
 
-	
+  pthread_mutex_lock(&lizardLock); //CF
+  --semaphoreCounter; //CF
+  pthread_mutex_unlock(&lizardLock); //CF
 
+  if(debug){
+    cout << "Current semaphore value: " << semaphoreCounter << endl; //CF
+  }
 
 	if (debug)
     {
-		cout << "[" << _id << "] thinks  sago -> monkey grass  is safe" << endl;
+		cout << "[" << _id << "] thinks sago -> monkey grass is safe" << endl;
 		cout << flush;
     }
 }
@@ -368,13 +379,13 @@ void Lizard::sago2MonkeyGrassIsSafe()
  * Delays for 1 second to simulate crossing from the sago to
  * the monkey grass. 
  *
- * Status: Incomplete - Make changes as you see are necessary.
+ * Status: Complete - Make changes as you see are necessary. //CF
  */
 void Lizard::crossSago2MonkeyGrass()
 {
 	if (debug)
     {
-      cout << "[" << _id << "] crossing  sago -> monkey grass" << endl;
+      cout << "[" << _id << "] crossing sago -> monkey grass" << endl;
       cout << flush;
     }
 
@@ -388,7 +399,7 @@ void Lizard::crossSago2MonkeyGrass()
      */
 	if (numCrossingMonkeyGrass2Sago && UNIDIRECTIONAL)
     {
-		cout << "\tCrash!  We have a pile-up on the concrete." << endl;
+		cout << "\tCrash! We have a pile-up on the concrete." << endl;
 		cout << "\t" << numCrossingSago2MonkeyGrass << " crossing sago -> monkey grass" << endl;
 		cout << "\t" << numCrossingMonkeyGrass2Sago << " crossing monkey grass -> sago" << endl;
 		exit( -1 );
@@ -410,7 +421,7 @@ void Lizard::crossSago2MonkeyGrass()
 /**
  * Tells others they can go now
  *
- * Status: Incomplete - Make changes as you see are necessary.
+ * Status: Complete - Make changes as you see are necessary. //CF
  */
 void Lizard::madeIt2MonkeyGrass()
 {
@@ -419,10 +430,19 @@ void Lizard::madeIt2MonkeyGrass()
      */
 	if (debug)
     {
-		cout << "[" << _id << "] made the  sago -> monkey grass  crossing" << endl;
+		cout << "[" << _id << "] made the sago -> monkey grass crossing" << endl;
 		cout << flush;
     }
 
+  lizardSemaphore.release(); //CF
+
+  pthread_mutex_lock(&lizardLock); //CF
+  ++semaphoreCounter; //CF
+  pthread_mutex_unlock(&lizardLock); //CF
+
+  if(debug){
+    cout << "Current Semaphore Value: " << semaphoreCounter << endl; //CF
+  }
 
 
 
@@ -471,17 +491,25 @@ void Lizard::monkeyGrass2SagoIsSafe()
 {
 	if (debug)
     {
-		cout << "[" << _id << "] checking  monkey grass -> sago" << endl;
+		cout << "[" << _id << "] checking monkey grass -> sago" << endl;
 		cout << flush;
     }
 
+  lizardSemaphore.acquire(); //CF
 
+  pthread_mutex_lock(&lizardLock); //CF
+  --semaphoreCounter; //CF
+  pthread_mutex_unlock(&lizardLock); //CF
+
+  if(debug){
+    cout << "Current Semaphore Value: " << semaphoreCounter << endl; //CF
+  }
 
 
 
 	if (debug)
     {
-		cout << "[" << _id << "] thinks  monkey grass -> sago  is safe" << endl;
+		cout << "[" << _id << "] thinks monkey grass -> sago is safe" << endl;
 		cout << flush;
     }
 }
@@ -498,7 +526,7 @@ void Lizard::crossMonkeyGrass2Sago()
 {
 	if (debug)
     {
-		cout << "[" << _id << "] crossing  monkey grass -> sago" << endl;
+		cout << "[" << _id << "] crossing monkey grass -> sago" << endl;
 		cout << flush;
     }
 
@@ -544,9 +572,19 @@ void Lizard::madeIt2Sago()
      */
 	if (debug)
     {
-		cout << "[" << _id << "] made the  monkey grass -> sago  crossing" << endl;
+		cout << "[" << _id << "] made the monkey grass -> sago crossing" << endl;
 		cout << flush;
     }
+
+  lizardSemaphore.release();
+
+  pthread_mutex_lock(&lizardLock); //CF
+  ++semaphoreCounter; //CF
+  pthread_mutex_unlock(&lizardLock); //CF
+
+  if(debug){
+    cout << "Current semaphore value: " << semaphoreCounter << endl;
+  }
 }
 
 /**
@@ -558,7 +596,7 @@ void Lizard::madeIt2Sago()
   *
   * @return N/A
   
-  * Status: Incomplete - Make changes as you see are necessary.
+  * Status: Complete - Make changes as you see are necessary. //CF
   */
 void Lizard::lizardThread(Lizard *aLizard)
 {	
@@ -603,7 +641,7 @@ void Lizard::lizardThread(Lizard *aLizard)
  * Should initialize variables, locks, semaphores, etc.
  * Should start the cat thread and the lizard threads
  * Should block until all threads have terminated
- * Status: Incomplete - Make changes to this code.
+ * Status: Complete - Make changes to this code. //CF
  */
 int main(int argc, char **argv)
 {
@@ -703,7 +741,6 @@ int main(int argc, char **argv)
 	/*
      * Delete the locks and semaphores
      */
-	 
 	 
 	 
 	/*
