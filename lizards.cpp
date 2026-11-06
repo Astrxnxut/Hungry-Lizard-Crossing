@@ -358,14 +358,6 @@ void Lizard::sago2MonkeyGrassIsSafe()
     
   lizardSemaphore.acquire(); //CF
 
-  pthread_mutex_lock(&lizardLock); //CF
-  --semaphoreCounter; //CF
-  pthread_mutex_unlock(&lizardLock); //CF
-
-  if(debug){
-    cout << "Current semaphore value: " << semaphoreCounter << endl; //CF
-  }
-
 	if (debug)
     {
 		cout << "[" << _id << "] thinks sago -> monkey grass is safe" << endl;
@@ -392,7 +384,9 @@ void Lizard::crossSago2MonkeyGrass()
 	/*
 	 * One more crossing this way
 	 */
+  pthread_mutex_lock(&lizardLock); //CF
 	numCrossingSago2MonkeyGrass++;
+  pthread_mutex_unlock(&lizardLock); //CF
 
 	/*
      * Check for lizards cross both ways
@@ -414,7 +408,9 @@ void Lizard::crossSago2MonkeyGrass()
     /*
      * That one seems to have made it
      */
+    pthread_mutex_lock(&lizardLock); //CF
     numCrossingSago2MonkeyGrass--;
+    pthread_mutex_lock(&lizardLock); //CF
 }
 
 
@@ -435,18 +431,6 @@ void Lizard::madeIt2MonkeyGrass()
     }
 
   lizardSemaphore.release(); //CF
-
-  pthread_mutex_lock(&lizardLock); //CF
-  ++semaphoreCounter; //CF
-  pthread_mutex_unlock(&lizardLock); //CF
-
-  if(debug){
-    cout << "Current Semaphore Value: " << semaphoreCounter << endl; //CF
-  }
-
-
-
-
 }
 
 
@@ -497,16 +481,6 @@ void Lizard::monkeyGrass2SagoIsSafe()
 
   lizardSemaphore.acquire(); //CF
 
-  pthread_mutex_lock(&lizardLock); //CF
-  --semaphoreCounter; //CF
-  pthread_mutex_unlock(&lizardLock); //CF
-
-  if(debug){
-    cout << "Current Semaphore Value: " << semaphoreCounter << endl; //CF
-  }
-
-
-
 	if (debug)
     {
 		cout << "[" << _id << "] thinks monkey grass -> sago is safe" << endl;
@@ -533,7 +507,9 @@ void Lizard::crossMonkeyGrass2Sago()
     /*
      * One more crossing this way
      */
-	numCrossingMonkeyGrass2Sago++;
+    pthread_mutex_lock(&lizardLock); //CF
+	  numCrossingMonkeyGrass2Sago++;
+    pthread_mutex_unlock(&lizardLock); //CF
 
   
     /*
@@ -555,7 +531,9 @@ void Lizard::crossMonkeyGrass2Sago()
 	/*
      * That one seems to have made it
      */
+    pthread_mutex_lock(&lizardLock); //CF
 	numCrossingMonkeyGrass2Sago--;
+  pthread_mutex_unlock(&lizardLock); //CF
 }
 
 
@@ -576,15 +554,7 @@ void Lizard::madeIt2Sago()
 		cout << flush;
     }
 
-  lizardSemaphore.release();
-
-  pthread_mutex_lock(&lizardLock); //CF
-  ++semaphoreCounter; //CF
-  pthread_mutex_unlock(&lizardLock); //CF
-
-  if(debug){
-    cout << "Current semaphore value: " << semaphoreCounter << endl;
-  }
+  lizardSemaphore.release(); //CF
 }
 
 /**
